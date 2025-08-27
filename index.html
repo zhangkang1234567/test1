@@ -63,24 +63,60 @@
     .show_info{position:fixed;top:30%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);padding:10px;border-radius:5px;box-shadow:0 0 10px #fff;width:300px;text-align:center;display:none;}
     .show_info img{width:200px;border-radius:5px;}
     .intro{color:#fff;text-indent:20px;margin-top:10px;}
+
+  #loveLetter {
+    position: fixed;
+    left: 20px;
+    top: 20px;
+    width: 300px;
+    background: #f0f0f0; /* 浅灰色背景 */
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 16px;
+    line-height: 1.6;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0, 0.2);
+    z-index: 1001;
+    opacity: 0;
+    transition: opacity 0.5s;
+	 color: #ff69b0;
+  }
+
+  #loveLetter.active {
+    opacity: 1;
+  }
+
+  .line {
+    margin-bottom: 10px;
+  }
+
+  /* 生成随机颜色 */
+  .line1 { color: #ff69b0; }
+  .line2 { color: #9dff0f; }
+  .line4 { color: #9dff0f; }
+
+
+
   </style>
 </head>
 
 <body>
   <!-- ===== 3D 容器 ===== -->
   <div id="container"></div>
+  <div id="loveLetter" class="letter">
+</div>
 
   <!-- ===== 音乐 ===== -->
-  <audio autoplay loop>
-    <source src="http://www.ytmp3.cn/down/72794.mp3">
+  <audio id="bgm"  loop muted playsinline >
+    <source src="./song.mp3" type="audio/mpeg">
   </audio>
 
   <!-- ===== 底部按钮 ===== -->
   <div id="menu">
-    <button id="table">表格</button>
-    <button id="sphere">球球</button>
-    <button id="helix">螺旋</button>
-    <button id="grid">格子</button>
+    <button id="table">照片墙</button>
+    <button id="sphere">星球视图</button>
+    <button id="helix">螺旋视图</button>
+    <button id="grid">网格视图</button>
   </div>
 
   <!-- ===== 计时器 ===== -->
@@ -97,7 +133,7 @@
   <!-- ===== 中间弹窗（原 show_info，保留）===== -->
   <div class="show_info animated" style="display:none;">
     <div class="info_my">
-      <img width="200" src="img/c.png">
+      <img width="200" src="img/4.png">
     </div>
     <div class="intro">天气好冷，我的心是冰冰的！</div>
   </div>
@@ -111,9 +147,41 @@
 
   <!-- ===== 页面脚本 ===== -->
   <script>
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var text = "亲爱的CiCi，\n在这个特别的日子里，我想对你说：你是我生命中最美丽的相遇。\n每当我看到你的笑容，我的心就会融化。\n愿我们的爱情像这星空一样，永恒而璀璨。\n爱你的，\n[你的名字]";
+    var letter = document.getElementById('loveLetter');
+    letter.classList.add('active');
+    var index = 0;
+
+    function typeWriter() {
+       if (index < text.length) {
+            var currentChar = text.charAt(index);
+            if (currentChar === '\n') {
+                letter.innerHTML += '<br><span class="line">';
+            } else {
+                letter.innerHTML += currentChar;
+            }
+            index++;
+            setTimeout(typeWriter, 100); // 调整速度
+        }
+    }
+
+    typeWriter();
+ });
+
+	const bgm=document.getElementById('bgm');
+// 先静音播放，浏览器放行
+bgm.play().catch(()=>{});
+// 任意交互后解除静音
+['click','keydown','touchstart'].forEach(ev=>{
+  document.addEventListener(ev,()=>{
+    if(bgm.muted){bgm.muted=false;bgm.play();}
+  },{once:true});
+});
     /* ---------- 3D 照片墙 ---------- */
     var personArray = [];
-    for (var i = 0; i < 199; i++) personArray.push({ image: "img/a.png" });
+    for (var i = 0; i < 199; i++) personArray.push({ image: `img/${Math.floor(Math.random() * 9) + 1}.jpg` });
 
     var table = [];
     for (var i = 0; i < personArray.length; i++) {
