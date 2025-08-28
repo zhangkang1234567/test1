@@ -64,38 +64,51 @@
     .show_info img{width:200px;border-radius:5px;}
     .intro{color:#fff;text-indent:20px;margin-top:10px;}
 
-  #loveLetter {
-    position: fixed;
-    left: 20px;
-    top: 20px;
-    width: 300px;
-    background: #f0f0f0; /* 浅灰色背景 */
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 16px;
-    line-height: 1.6;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0, 0.2);
-    z-index: 1001;
-    opacity: 0;
-    transition: opacity 0.5s;
-	 color: #ff69b0;
-  }
+#loveLetter {
+  display: none;
+  position: fixed;
+  left: 20px;
+  top: 60px;
+  width: 300px;
+  background: #f0f0f0; /* 浅灰色背景 */
+  color: #333; /* 字体颜色 */
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 16px;
+  line-height: 1.6;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+  transition: opacity 0.5s;
+}
 
-  #loveLetter.active {
-    opacity: 1;
-  }
+#loveLetter.active {
+  opacity: 1;
+}
 
-  .line {
-    margin-bottom: 10px;
-  }
+.letter-content {
+  margin-top: 10px;
+}
 
+#closeButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
   /* 生成随机颜色 */
   .line1 { color: #ff69b0; }
   .line2 { color: #9dff0f; }
   .line4 { color: #9dff0f; }
 
-
+#fireworksCanvas {
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
 
   </style>
 </head>
@@ -103,7 +116,14 @@
 <body>
   <!-- ===== 3D 容器 ===== -->
   <div id="container"></div>
-  <div id="loveLetter" class="letter">
+
+<button id="envelopeButton" style="position:fixed; top:10px; left:10px; z-index:1000; padding:10px; background-color:#ff69b0; color:#fff; border:none; border-radius:50%; font-size:20px; cursor:pointer;">💌</button>
+
+<!-- 情书容器 -->
+<div id="loveLetter" class="letter" style="display:none; position:fixed; left:20px; top:60px; z-index:1000;">
+  <div class="letter-content">
+  </div>
+  <!-- <button id="closeButton" style="position:absolute; right:10px; top:10px; cursor:pointer; background:none; border:none; font-size:24px;">✖</button> -->
 </div>
 
   <!-- ===== 音乐 ===== -->
@@ -127,7 +147,7 @@
   <!-- ===== 右侧放大预览 ===== -->
   <div id="hoverPreview">
     <img id="previewImg" src="" alt="">
-    <div id="previewTxt">介绍加载中…</div>
+    <div id="previewTxt" style="color: rebeccapurple">介绍加载中…</div>
   </div>
 
   <!-- ===== 中间弹窗（原 show_info，保留）===== -->
@@ -147,28 +167,107 @@
 
   <!-- ===== 页面脚本 ===== -->
   <script>
+	
+function fire() {
+	var canvas = document.getElementById('fireworksCanvas');
+  var ctx = canvas.getContext('2d');
 
-  document.addEventListener('DOMContentLoaded', function () {
-    var text = "亲爱的CiCi，\n在这个特别的日子里，我想对你说：你是我生命中最美丽的相遇。\n每当我看到你的笑容，我的心就会融化。\n愿我们的爱情像这星空一样，永恒而璀璨。\n爱你的，\n[你的名字]";
-    var letter = document.getElementById('loveLetter');
-    letter.classList.add('active');
-    var index = 0;
+  canvas.width = window.innerWidth * 2;
+  canvas.height = window.innerHeight * 2;
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 1;
 
-    function typeWriter() {
-       if (index < text.length) {
-            var currentChar = text.charAt(index);
-            if (currentChar === '\n') {
-                letter.innerHTML += '<br><span class="line">';
-            } else {
-                letter.innerHTML += currentChar;
-            }
-            index++;
-            setTimeout(typeWriter, 100); // 调整速度
-        }
+  var particles = [];
+  var maxParticles = 100;
+
+  function setup() {
+    canvas.width = window.innerWidth * 2;
+    canvas.height = window.innerHeight * 2;
+     ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+     ctx.strokeStyle = '#fff';
+     ctx.lineWidth = 1;
+  }
+
+  function createParticle(x, y) {
+    return {
+     x: x,
+     y: y,
+     size: Math.random() * 4 + 1,
+     speed: Math.random() * 2,
+     angle: Math.random() * 2 * Math.PI,
+     color: `hsl(${Math.random() * 360}, 100%, 100%)`
+   };
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (var i = particles.length - 1; i >= 0; i--) {
+     var p = particles[i];
+     p.x += Math.cos(p.angle) * p.speed;
+     p.y += Math.sin(p.angle) * p.speed;
+     p.speed *= 0.95;
+     ctx.beginPath();
+     ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+     ctx.fillStyle = p.color;
+     ctx.fill();
+     if (p.size < 0.5) particles.splice(i, 1);
     }
+    requestAnimationFrame(animate);
+  }
 
+  function launch() {
+    for (var i = 0; i < maxParticles; i++) {
+     var angle = Math.random() * Math.PI * 2;
+     var speed = Math.random() * 2 + 1;
+     var p = createParticle(
+       canvas.width / 2 + Math.cos(angle) * 50,
+       canvas.height / 2 + Math.sin(angle) * 50,
+        angle,
+       speed
+     );
+     particles.push(p);
+    }
+  }
+
+  setup();
+  animate();
+  setInterval(launch, 500 + Math.random() * 2000); // 每隔一段时间发射烟花
+}
+document.addEventListener('DOMContentLoaded', function () {
+	fire()
+  var text = "亲爱的CiCi，\n在这个特别的日子里，我想对你说：你是我生命中最美丽的相遇。\n每当我看到你的笑容，我的心就会融化。\n愿我们的爱情像这星空一样，永恒而璀璨。\n爱你的，\n[zk]";
+  var letter = document.getElementById('loveLetter');
+  var currentIndex = 0;
+
+  function typeWriter() {
+    if (currentIndex < text.length) {
+        var currentChar = text.charAt(currentIndex);
+        if (currentChar === '\n') {
+            letter.innerHTML += '<br>';
+        } else {
+            letter.innerHTML += currentChar;
+        }
+        currentIndex++;
+        setTimeout(typeWriter, 100); // 调整速度
+    }}
+  let isshow = false;
+  document.getElementById('envelopeButton').addEventListener('click', function() {
+	isshow = !isshow
+	if(isshow) {
+      letter.classList.add('active');
+    letter.style.display = 'block';
     typeWriter();
- });
+	 
+	}else {
+		 letter.classList.remove('active');
+    setTimeout(() => { letter.style.display = 'none'; }, 500); // 延迟隐藏，以便看到淡出效果
+	}
+    
+  });
+
+
+})
 
 	const bgm=document.getElementById('bgm');
 // 先静音播放，浏览器放行
@@ -316,15 +415,30 @@ bgm.play().catch(()=>{});
     const hoverBox = document.getElementById('hoverPreview');
     const hoverImg = document.getElementById('previewImg');
     const hoverTxt = document.getElementById('previewTxt');
-
+const loveMessages = {
+  1: "你是我心中的温柔月光，照亮我所有的黑暗。",
+  2: "每次想到你，我的心里就开满了花。",
+  3: "你的微笑是我一天中最美好的事情。",
+  4: "我愿意用我所有的力量来守护你的微笑。",
+  5: "你让我的世界变得完整，谢谢你的存在。",
+  6: "无论未来如何，我的心永远有一个位置属于你。",
+  7: "和你在一起的时光总是过得太快。",
+  8: "你让我相信，世界上真的有奇迹，那就是遇见你。",
+  9: "我爱你，从这里到月亮，再绕回来。"
+};
+    const tempLenth = new Set();
     document.addEventListener('mouseover', e=>{
+	  if (tempLenth.size === 9) {
+		window.alert('俺欠cc 小姐姐礼物一份！--- zk')
+		tempLenth.clear()
+	  }
       const el = e.target.closest('.element');
       if(!el) return;
       const img = el.querySelector('img');
       hoverImg.src = img.src;
-      hoverTxt.textContent = 'CiCi 的萌照，今天是认识你的第 ' +
-        Math.floor((Date.now()-new Date('2025-02-10T11:54:00'))/86400000) + ' 天！';
+      hoverTxt.textContent = loveMessages[img.src.slice(-5,-4)];
       hoverBox.classList.add('show');
+	  tempLenth.add(img.src.slice(-5,-4));
     });
 
     document.addEventListener('mouseout', e=>{
